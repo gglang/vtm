@@ -19,16 +19,21 @@ package org.oscim.layers;
 import static org.oscim.backend.CanvasAdapter.dpi;
 import static org.oscim.utils.FastMath.withinSquaredDist;
 
+import org.oscim.core.GeoPoint;
 import org.oscim.core.Tile;
 import org.oscim.event.Event;
 import org.oscim.event.Gesture;
 import org.oscim.event.GestureListener;
 import org.oscim.event.MotionEvent;
+import org.oscim.layers.marker.InanimateItem;
+import org.oscim.layers.marker.ItemizedLayer;
 import org.oscim.map.Map;
 import org.oscim.map.Map.InputListener;
 import org.oscim.map.ViewController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Random;
 
 /**
  * Changes Viewport by handling move, fling, scale, rotation and tilt gestures.
@@ -58,6 +63,7 @@ public class MapEventLayer extends Layer implements InputListener, GestureListen
 
 	private boolean mDown;
 	private boolean mDoubleTap;
+	private boolean mLongPress;
 	private boolean mDragZoom;
 
 	private float mPrevX1;
@@ -82,6 +88,8 @@ public class MapEventLayer extends Layer implements InputListener, GestureListen
 	protected static final float FLING_MIN_THREHSHOLD = 100;
 
 	private final VelocityTracker mTracker;
+
+	private final String flagLayerID = "inanimateLayer";	// FIXME get rid of this hack
 
 	public MapEventLayer(Map map) {
 		super(map);
@@ -130,6 +138,7 @@ public class MapEventLayer extends Layer implements InputListener, GestureListen
 			mStartMove = -1;
 			mDoubleTap = false;
 			mDragZoom = false;
+			mLongPress = false;
 
 			mPrevX1 = e.getX(0);
 			mPrevY1 = e.getY(0);
@@ -137,7 +146,7 @@ public class MapEventLayer extends Layer implements InputListener, GestureListen
 			mDown = true;
 			return true;
 		}
-		if (!(mDown || mDoubleTap)) {
+		if (!(mDown || mDoubleTap || mLongPress)) {
 			/* no down event received */
 			return false;
 		}
@@ -148,7 +157,26 @@ public class MapEventLayer extends Layer implements InputListener, GestureListen
 		}
 		if (action == MotionEvent.ACTION_UP) {
 			mDown = false;
-			if (mDoubleTap && !mDragZoom) {
+			if(mLongPress && !mDoubleTap) {
+				/* handle long press to add flag */
+				// FIXME find a better way to differentiate item layers and get access to them throughout the project
+				// FIXME Note to the reader of this unfortunate code snippet: this is a prototype, to hell with it.
+				for(Layer layer : mMap.layers()) {
+					if(layer instanceof ItemizedLayer
+							&& ((ItemizedLayer)layer).getLayerID().equals(flagLayerID)) {	// FIXME find a better way than this hack...
+
+						ItemizedLayer itemLayer = (ItemizedLayer)layer;	// FIXME does the lack of a generic type defined here cause bugs?
+						GeoPoint tapLocation = mMap.viewport().fromScreenPoint(e.getX(), e.getY());
+						InanimateItem flag = new InanimateItem("Flame on.", "Your fingers feel warm.",
+								tapLocation, new Random().nextInt(1000000), true);	// FIXME get unique id for flag
+						itemLayer.addItem(flag);
+						mMap.updateMap(true);
+
+						break;
+					}
+				}
+
+			} else if (mDoubleTap && !mDragZoom) {
 				float pivotX = 0, pivotY = 0;
 				if (!mFixOnCenter) {
 					pivotX = mPrevX1 - mMap.getWidth() / 2;
@@ -423,6 +451,12 @@ public class MapEventLayer extends Layer implements InputListener, GestureListen
 			mDoubleTap = true;
 			return true;
 		}
+
+		if(g == Gesture.LONG_PRESS) {
+			mLongPress = true;
+			return true;
+		}
+
 		return false;
 	}
 

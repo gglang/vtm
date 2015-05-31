@@ -17,7 +17,10 @@
 package org.oscim.android;
 
 import org.oscim.android.gl.GLView;
+import org.oscim.core.GeoPoint;
+import org.oscim.event.MotionEvent;
 import org.oscim.map.Map;
+import org.oscim.map.Viewport;
 
 import android.widget.RelativeLayout.LayoutParams;
 

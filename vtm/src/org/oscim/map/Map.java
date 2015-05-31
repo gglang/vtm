@@ -16,6 +16,7 @@
  */
 package org.oscim.map;
 
+import org.oscim.core.GeoPoint;
 import org.oscim.core.MapPosition;
 import org.oscim.event.Event;
 import org.oscim.event.EventDispatcher;

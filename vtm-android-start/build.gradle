@@ -8,11 +8,11 @@ configurations {
 dependencies {
   compile project(':vtm-android')
   compile project(':vtm-themes')
-
   compile 'com.android.support:support-v4:21.+'
   eclipseCompile project(':appcompat')
-
   compile 'com.noveogroup.android:android-logger:1.3.4'
+  compile 'com.google.android.gms:play-services:7.3.0'
+  //TODO get this import working right so that you can use fusedlocation getter
 }
 
 android {

@@ -40,19 +40,21 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
 	protected final Point mTmpPoint = new Point();
 	protected OnItemGestureListener<Item> mOnItemGestureListener;
 	protected int mDrawnItemsLimit = Integer.MAX_VALUE;
+	private final String layerID;	// FIXME find a better way to differentiate item layers and get access to them throughout the project
 
-	public ItemizedLayer(Map map, MarkerSymbol defaulMarker) {
-		this(map, new ArrayList<Item>(), defaulMarker, null);
+	public ItemizedLayer(Map map, MarkerSymbol defaultMarker, String id) {
+		this(map, new ArrayList<Item>(), defaultMarker, null, id);
 	}
 
 	public ItemizedLayer(Map map, List<Item> list,
 	        MarkerSymbol defaultMarker,
-	        OnItemGestureListener<Item> listener) {
+	        OnItemGestureListener<Item> listener, String id) {
 
 		super(map, defaultMarker);
 
 		mItemList = list;
 		mOnItemGestureListener = listener;
+		layerID = id;
 		populate();
 	}
 
@@ -70,16 +72,25 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
 		return Math.min(mItemList.size(), mDrawnItemsLimit);
 	}
 
+    /**
+     * Add item to item list, calling populate to reprocess all data in list.
+     */
 	public boolean addItem(Item item) {
 		final boolean result = mItemList.add(item);
 		populate();
 		return result;
 	}
 
+    /**
+     * Add item to item list, NOT calling populate to reprocess all data in list.
+     */
 	public void addItem(int location, Item item) {
 		mItemList.add(location, item);
 	}
 
+    /**
+     * Add items to item list, calling populate to reprocess all data in list.
+     */
 	public boolean addItems(List<Item> items) {
 		final boolean result = mItemList.addAll(items);
 		populate();
@@ -97,16 +108,37 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
 		}
 	}
 
+    public boolean containsItem(Item item) {
+        return mItemList.contains(item);
+    }
+
+    /**
+     * Call populate to reprocess all data in item list.
+     */
+	public void updateAllItems() {
+		populate();
+	}
+
+    /**
+     * Remove item from item list, calling populate to reprocess all data in list.
+     */
 	public boolean removeItem(Item item) {
 		final boolean result = mItemList.remove(item);
 		populate();
 		return result;
 	}
 
+    /**
+     * Remove item from item list, calling populate to reprocess all data in list.
+     */
 	public Item removeItem(int position) {
 		final Item result = mItemList.remove(position);
 		populate();
 		return result;
+	}
+
+	public String getLayerID() {
+		return layerID;
 	}
 
 	/**
@@ -179,7 +211,7 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
 		for (int i = 0; i < size; i++) {
 			Item item = mItemList.get(i);
 
-			if (!bbox.contains(item.geoPoint))
+			if (!bbox.contains(item.getPoint()))
 				continue;
 
 			mapPosition.toScreenPoint(item.getPoint(), mTmpPoint);

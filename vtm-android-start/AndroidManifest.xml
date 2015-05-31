@@ -3,15 +3,20 @@
   android:versionCode="1"
   android:versionName="1.0" >
 
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-  
+
   <uses-sdk
-    android:minSdkVersion="10"
-    android:targetSdkVersion="21" />
+    android:minSdkVersion="15"
+    android:targetSdkVersion="22" />
+
+
 
   <application
+      android:theme="@android:style/Theme.NoTitleBar">
     android:label="VTM Start"
     android:icon="@drawable/ic_launcher"
     android:allowBackup="true" >
